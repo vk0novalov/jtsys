@@ -6,9 +6,7 @@
  */
 
 if (typeof jQuery === "undefined") {
-    
-    throw "jQuery required";
-    
+    throw new Error("jQuery required");
 }
 
 (function ( window, $, undefined ) {
@@ -39,20 +37,16 @@ if (typeof jQuery === "undefined") {
                     message: "fail"
                 };
             }
-            
             if ( collection.constructor != Array ) {
                 collection = [collection];
             }
-            
             var path = this.defaultOpts.pathToViews + viewName;
             
             if (!this.defaultOpts.cacheable || !!!this.cache[path]) {
                 this.getView(path, collection,
                              this.getViewCallback, callback);
-            } else {
-                
-                callback( this.cache[path] );
-                
+            } else {              
+                callback( this.cache[path] );               
             }
         },
 
@@ -64,7 +58,6 @@ if (typeof jQuery === "undefined") {
                     message: "fail"
                 };
             }
-
             if ( collection.constructor != Array ) {
                 collection = [collection];
             }
@@ -75,14 +68,12 @@ if (typeof jQuery === "undefined") {
                     message: "fail"
                 };
             }
-
             templateHtml = this.trim( templateScript.innerHTML );
             
             return this.templateHandle( templateHtml, collection, filters );
         },
         
-        templateHandle: function ( templateHtml, collection, filters ) {
-            
+        templateHandle: function ( templateHtml, collection, filters ) { 
             var resultHtml = [],
                 has = Object.prototype.hasOwnProperty,
                 i, j, collectionLength, filterName, path, pathLength,
@@ -128,34 +119,24 @@ if (typeof jQuery === "undefined") {
                     }
                     return full;
                 });
-
                 resultHtml.push( _template );
             }
-
-            return resultHtml.join( '' );
-            
+            return resultHtml.join( '' );     
         },
         
-        getViewCallback : function ( tmpl, collection, callback, path ) {
-                
+        getViewCallback : function ( tmpl, collection, callback, path ) {   
             var result = this.templateHandle(this.trim( tmpl ), collection);
             
-            if (this.defaultOpts.cacheable) {
-                
+            if (this.defaultOpts.cacheable) { 
                 this.cache[path] = result;
-                
             }
-            
-            callback( result );
-                
+            callback( result ); 
         },
         
         getView: function ( path, collection, callback, callbackResult ) {
             
             $.get( path + "?" + Math.random(), $.proxy(function (result) {
-                
                 callback.call( this, result, collection, callbackResult, path );
-                
             }, this ), "text" );
             
         },
