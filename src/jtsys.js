@@ -1,62 +1,53 @@
 ﻿/**
  * JavascriptTemplatingSystem ^___^
- *  (special for http://dailygui.de)
  *
- *  2011 (c) virpool
+ *  2012 (c) virpool
  */
 
-if (typeof jQuery === "undefined") {
-    throw new Error("jQuery required");
-}
-
-(function ( window, $, undefined ) {
+(function ( window, undefined ) {
 
     "use strict";
+    
+    var types = {
+        'string' : '[object String]'
+    }, toS = Object.prototype.toString;
+    
+    function isString (obj) {
+        return obj && toS.call(obj) === types.string;         
+    }
 
     var Jtsys = function ( options ) {
         // todo: implementation of strict mode, some parameters etc.
         this.defaultOpts = {
-            pathToViews : '/views/',
-            cacheable : false,
-            cacheTimeoutMinutes : 5, 
             isStrictMode: false
         };
         
         $.extend(this.defaultOpts, options);
         
-        this.cache = {};
+        this._result = [];
     };
 
     Jtsys.prototype = {
+    
+        constructor: Jtsys,
+    
+        reset: function () {
+            this._result = [];  
+        },
         
-        processView: function ( viewName, collection, callback ) {
-            var templateHtml;
-
-            if (typeof viewName !== "string") {
-                throw {
-                    message: "fail"
-                };
-            }
-            if ( collection.constructor != Array ) {
-                collection = [collection];
-            }
-            var path = this.defaultOpts.pathToViews + viewName;
-            
-            if (!this.defaultOpts.cacheable || !!!this.cache[path]) {
-                this.getView(path, collection,
-                             this.getViewCallback, callback);
-            } else {              
-                callback( this.cache[path] );               
-            }
+        append: function (html) {
+            isString(html) && this._result.push(html);
+        },
+        
+        get: function () {
+            return this._result.join( '' ); 
         },
 
         process: function ( tmpl, collection, filters ) {
             var templateHtml, templateScript;
 
             if (typeof tmpl !== "string") {
-                throw {
-                    message: "fail"
-                };
+                throw new Error("Template's identifier expected");
             }
             if ( collection.constructor != Array ) {
                 collection = [collection];
@@ -64,18 +55,15 @@ if (typeof jQuery === "undefined") {
 
             templateScript = document.getElementById( tmpl );
             if ( !!!templateScript ) {
-                throw {
-                    message: "fail"
-                };
+                throw new Error("Template expected");
             }
             templateHtml = this.trim( templateScript.innerHTML );
             
-            return this.templateHandle( templateHtml, collection, filters );
+            this.templateHandle( templateHtml, collection, filters );
         },
         
         templateHandle: function ( templateHtml, collection, filters ) { 
-            var resultHtml = [],
-                has = Object.prototype.hasOwnProperty,
+            var has = Object.prototype.hasOwnProperty,
                 i, j, collectionLength, filterName, path, pathLength,
                 _template, object, propValue;
             
@@ -119,28 +107,10 @@ if (typeof jQuery === "undefined") {
                     }
                     return full;
                 });
-                resultHtml.push( _template );
-            }
-            return resultHtml.join( '' );     
+                this._result.push( _template );
+            }    
         },
         
-        getViewCallback : function ( tmpl, collection, callback, path ) {   
-            var result = this.templateHandle(this.trim( tmpl ), collection);
-            
-            if (this.defaultOpts.cacheable) { 
-                this.cache[path] = result;
-            }
-            callback( result ); 
-        },
-        
-        getView: function ( path, collection, callback, callbackResult ) {
-            
-            $.get( path + "?" + Math.random(), $.proxy(function (result) {
-                callback.call( this, result, collection, callbackResult, path );
-            }, this ), "text" );
-            
-        },
-
         trim: function ( inStr ) {
             return inStr.replace( /(^\s+)|(\s+$)/g, "" );
         }
@@ -148,4 +118,4 @@ if (typeof jQuery === "undefined") {
 
     window.Jtsys = Jtsys;
     
-}) ( window, jQuery );
+}) ( window );
